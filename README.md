@@ -88,7 +88,7 @@ ssh -T git@github.com
 Clone the repository:
 ```
 cd /var/www
-git clone git@github.com:newscloud/listapp.git
+git clone git@github.com:mailgun/listapp.git
 ```
 
 ### Install Composer and the Mailgun PHP SDK
@@ -128,7 +128,7 @@ Build the configuration file for your application:
 cd /var/www
 mkdir secure
 cd /var/www/secure
-sudo nano config-listapp.ini
+sudo nano listapp.ini
 ```
 - copy & paste in your settings using sample-config.ini (in this directory)
 - as an example
