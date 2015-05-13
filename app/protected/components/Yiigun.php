@@ -22,6 +22,7 @@ class Yiigun extends CComponent
                                                'to' => $to,
                                                'subject' => $subject,
                                                'text' => $body,
+                                               'html' => $body,
                                                ));
     return $result->http_response_body;    
   }	
