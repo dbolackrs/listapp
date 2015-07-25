@@ -132,7 +132,9 @@ class Mglist extends CActiveRecord
 	  // don't build membership detail report for batch list sync
 	  if (is_null($id)) return false;
 	  $output_str = '';
-    $mglist = $this->findByPk($id);    
+    $mglist = $this->findByPk($id);
+    // PRUNE ALL USERS FROM THE DB FOR THIS LIST
+      Membership::model()->deleteAll('mglist_id=:mglist_id', array(':mglist_id'=>$id));
 	  $yg = new Yiigun();
 	  // fetch list address based on $id
 	  $my_members = $yg->fetchListMembers($mglist['address']);
