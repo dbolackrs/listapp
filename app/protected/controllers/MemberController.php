@@ -31,7 +31,7 @@ class MemberController extends Controller
 				'users'=>array('*'),
 			),
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('create','update','import','index','view'),
+				'actions'=>array('create','update','import','index','view','prune'),
 				'users'=>array('@'),
 			),
 			array('allow', // allow admin user to perform 'admin' and 'delete' actions
@@ -174,6 +174,74 @@ class MemberController extends Controller
 	 * Creates a new model.
 	 * If creation is successful, the browser will be redirected to the 'view' page.
 	 */
+	public function actionPrune($id=0)
+	{
+	        $model = new Prune();
+    		$model->mglist_id = $id;
+    		// Uncomment the following line if AJAX validation is needed
+    		// $this->performAjaxValidation($model);
+    		if(isset($_POST['Prune']))
+    		{
+    			$temp_email_list = $_POST['Prune']['email_list'];
+          include('Mail/RFC822.php');
+          $parser = new Mail_RFC822();
+          // replace the backslash quotes 
+          $tolist=str_replace('\\"','"',$temp_email_list); 
+          // split the elements by line and by comma 
+          $to_email_array = preg_split ("(\r|\n|,)", $tolist, -1, PREG_SPLIT_NO_EMPTY);
+          $num_emails = count ($to_email_array); 
+          $temp ='';
+          // construct bulk list of new members for mailgun api call
+          $yg = new Yiigun;
+          $list_item = Mglist::model()->findByPk($id);
+          for ($count = 0; $count < $num_emails && $count <= 500; $count++) 
+          {
+            $toAddress=trim($to_email_array[$count]);
+            if ($toAddress<>'') {
+              $addresses = $parser->parseAddressList('my group:'.$toAddress,'yourdomain.com', false,true);
+              foreach ($addresses as $i) {
+                if ($i->mailbox<>'' and $i->host<>'') {
+                  $temp.=$i->mailbox.'@'.$i->host.',';
+                }
+                $m = new Member();
+                if ($i->personal<>'') {
+                  $m->name = $i->personal;
+                }
+                else 
+                  $m->name ='';
+                $m->address=$i->mailbox.'@'.$i->host;
+                $m->status=1;
+                $m->created_at = new CDbExpression('NOW()'); 
+                $m->modified_at = new CDbExpression('NOW()');          	                  
+                 // echo $m->name.' '.$m->address.' ->'.$id.'<br />';
+ 			    $lookup_item=Member::model()->findByAttributes(array('address'=>$m->address));
+            	  if (!is_null($lookup_item)) {
+            	       // member exists
+                      echo 'exists'.$lookup_item['id'];
+                      $m->removeFromList($lookup_item['id'],$id);
+		              $yg->memberDelete($list_item['address'],$m->address);
+            	  }
+              } 
+            }
+          }      
+          
+    	if($model->save()) {
+            Yii::app()->user->setFlash('prune_success','Thank you! Your messages have been submitted.');
+            // echo $json_upload;
+            // echo $list_item['address'];
+  				  $this->redirect('/mglist/'.$id);			  
+    			}
+    		}
+
+    		$this->render('prune',array(
+    			'model'=>$model,'mglist_id'=>$id,
+    		));
+	}
+
+  /**
+	 * Creates a new model.
+	 * If creation is successful, the browser will be redirected to the 'view' page.
+	 */
 	public function actionImport($id=0)
 	{
 	      $model = new Import();
@@ -252,7 +320,6 @@ class MemberController extends Controller
     			'model'=>$model,'mglist_id'=>$id,
     		));
 	}
-
 
 	/**
 	 * Returns the data model based on the primary key given in the GET variable.

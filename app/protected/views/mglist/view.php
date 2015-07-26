@@ -8,6 +8,7 @@ $this->menu=array(
 	array('label'=>'Send a message','url'=>Yii::app()->createUrl("message/create", array("id"=>$model->id))),
 	array('label'=>'Add a member','url'=>Yii::app()->createUrl("member/create", array("id"=>$model->id))),
 	array('label'=>'Import members','url'=>Yii::app()->createUrl("member/import", array("id"=>$model->id))),
+	array('label'=>'Remove Users','url'=>Yii::app()->createUrl("member/prune", array("id"=>$model->id))),
 	
 	array('label'=>'Update Properties','url'=>array('update','id'=>$model->id)),
 	array('label'=>'Delete','url'=>'#','linkOptions'=>array('submit'=>array('delete','id'=>$model->id),'confirm'=>'Are you sure you want to delete this item?')),

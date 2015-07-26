@@ -163,7 +163,7 @@ $lookup_item=$this->findByAttributes(array('address'=>$member->address));
 
 	public function removeFromList($member_id,$mglist_id) {
 	  if ($this->isMember($member_id,$mglist_id)) {
-      Member::model()->deleteAll('mglist_id='.$mglist_id.' and member_id='.$member_id);
+      Membership::model()->deleteAll('mglist_id='.$mglist_id.' and member_id='.$member_id);
       return true;
     } else
       return false;

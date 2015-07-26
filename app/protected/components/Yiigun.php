@@ -76,6 +76,12 @@ class Yiigun extends CComponent
     return $result->http_response_body;    
    }
    
+public function memberDelete( $list='', $email='' )
+{
+    $result = $this->mg->delete("lists/" . $list . "/members/" . $email );
+	return( $result );
+}   
+   
    public function memberUnsubscribe($list='',$email='') {
      $propList = array('subscribed'=>false);
      $result=$this->memberUpdate($list,$email,$propList);
