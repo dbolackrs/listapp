@@ -32,8 +32,27 @@ class Yiigun extends CComponent
     return $result->http_response_body;    
   }
 
-  public function fetchListMembers($address) {
-    $result = $this->mg->get("lists/".$address.'/members');
+  public function fetchListMembers($address, $skip=0, $limit=100) {
+  	// Altered to help control memory on large list iterations.
+    $result = $this->mg->get("lists/".$address.'/members?skip=' . $skip . "&limit=" . $limit );
+//    print_r($result->http_response_body);
+//    echo "Total Count for this list is ". $result->http_response_body->total_count . "   ";
+//    if( $result->http_response_body->total_count > 100 )
+//    {
+//    	$totalMembers=$result->http_response_body->total_count;
+//    	$offset=100;
+//    	while( $offset < $totalMembers )
+//    	{
+//      		echo "Collected " . $offset . " of " . $totalMembers . " records    ";
+//      		$offset += 100;
+//    		$nextResult = $this->mg->get("lists/".$address.'/members?skip='.$offset);
+//    		echo "Pulled another " . count( $nextResult->http_response_body->items ) . " addresses    ";
+//    		$offset += count( $nextResult->http_response_body->items );
+//    		$mergedResult = array_merge( $result->http_response_body->items, $nextResult->http_response_body->items );
+//    		echo "Merged Size: " . count( $mergedResult );
+//    		$result->http_response_body->items = $mergedResult;
+//    	}
+//    } 
     return $result->http_response_body;    
   }
 

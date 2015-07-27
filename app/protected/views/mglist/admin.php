@@ -41,7 +41,7 @@ $('.search-form form').submit(function(){
 	'id'=>'mglist-grid',
 	'dataProvider'=>$model->search(),
 	'type'=>'striped',
-	'filter'=>$model,
+//	'filter'=>$model,
 	'columns'=>array(
     array(
             'type' => 'raw',

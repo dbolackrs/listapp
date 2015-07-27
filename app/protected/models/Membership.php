@@ -90,16 +90,20 @@ class Membership extends CActiveRecord
 		$criteria=new CDbCriteria;
 
 		$criteria->compare('id',$this->id);
+		$criteria->limit = -1;
 		$criteria->compare('mglist_id',$this->mglist_id);
 		$criteria->compare('member_id',$this->member_id);
 		$criteria->compare('created_at',$this->created_at,true);
 		$criteria->compare('modified_at',$this->modified_at,true);
 		$criteria->condition='mglist_id='.$mglist_id;
-	  $criteria->join='left join la_member on la_member.id = member_id';
-    $criteria->order = Yii::app()->request->getParam('sort');
-
+	    $criteria->join='left join la_member on la_member.id = member_id';
+        $criteria->order = Yii::app()->request->getParam('sort');
+        
 		return new CActiveDataProvider($this, array(
-			'criteria'=>$criteria,
+				'pagination' => array(
+	     		'pageSize' => 50,
+				),			
+	'criteria'=>$criteria,
 		));
 	}
 }

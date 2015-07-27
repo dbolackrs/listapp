@@ -31,7 +31,7 @@ class MglistController extends Controller
 				'users'=>array('*'),
 			),
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('index','view','syncAll','syncList','create','update','send'),
+				'actions'=>array('index','view','syncAll','syncList','create','update','send', '_searchemail'),
 				'users'=>array('@'),
 			),
 			array('allow', // allow admin user to perform 'admin' and 'delete' actions
@@ -67,6 +67,14 @@ class MglistController extends Controller
 	public function actionView($id=0)
 	{
 		$this->render('view',array(
+			'model'=>$this->loadModel($id),
+			'membership'=> Membership::model()->search($id),
+		));
+	}
+	
+	public function action_searchemail($id=0)
+	{
+		$this->render('_searchemail',array(
 			'model'=>$this->loadModel($id),
 			'membership'=> Membership::model()->search($id),
 		));
@@ -174,7 +182,7 @@ class MglistController extends Controller
 		$model->unsetAttributes();  // clear any default values
 		if(isset($_GET['Mglist']))
 			$model->attributes=$_GET['Mglist'];
-    $cnt = Mglist::model()->count();
+    	$cnt = Mglist::model()->count();
 		$this->render('admin',array(
 			'model'=>$model,'cnt'=>$cnt
 		));

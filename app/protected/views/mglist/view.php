@@ -27,7 +27,7 @@ $this->widget('bootstrap.widgets.TbGridView',array(
 //	'filter'=>$membership,
 	'columns'=>array(
 		'member.name',
-  	'member.address',
+  		'member.address',
     array(            
                 'name'=>'member.status',
                 //call the method 'gridDataColumn' from the controller

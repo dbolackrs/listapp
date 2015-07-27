@@ -97,6 +97,8 @@ class Mglist extends CActiveRecord
 
 		$criteria=new CDbCriteria;
 
+//		$criteria->compare('mglist_id',$this->id);
+//		$criteria->compare('member.address',$this->address,true);
 		$criteria->compare('id',$this->id);
 		$criteria->compare('address',$this->address,true);
 		$criteria->compare('name',$this->name,true);
@@ -104,10 +106,12 @@ class Mglist extends CActiveRecord
 		$criteria->compare('access_level',$this->access_level);
 		$criteria->compare('created_at',$this->created_at,true);
 		$criteria->compare('modified_at',$this->modified_at,true);
-    $criteria->order = Yii::app()->request->getParam('sort');;
+		$criteria->order = Yii::app()->request->getParam('sort');;
 
 		return new CActiveDataProvider($this, array(
-			'criteria'=>$criteria,
+				'pagination' => array(
+	     			'pageSize' => 25,
+	),			'criteria'=>$criteria,
 		));
 	}
 	
@@ -116,10 +120,11 @@ class Mglist extends CActiveRecord
 	  $this->output_str = '';
 	  $yg = new Yiigun();
 	  $my_lists = $yg->fetchLists();
-  foreach ($my_lists->items as $item) {
+	  foreach ($my_lists->items as $item) {
   	  $this->output_str.='<p>Synchronizing list: '.$item->name.'<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
   	  // add to local db
-        $this->upsert($item);    	          $lookup_item=$this->findByAttributes(array('address'=>$item->address));        
+          $this->upsert($item);    	          
+          $lookup_item=$this->findByAttributes(array('address'=>$item->address));        
     	  $this->syncListMembers($lookup_item['id'],true);
     	  $this->output_str.='<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fetching members... <br />';  	  
     	  $this->output_str.='</p>';
@@ -131,24 +136,37 @@ class Mglist extends CActiveRecord
 	  // fetch list members from Mailgun.com
 	  // don't build membership detail report for batch list sync
 	  if (is_null($id)) return false;
+	  $runningCount=0;
 	  $output_str = '';
     $mglist = $this->findByPk($id);
     // PRUNE ALL USERS FROM THE DB FOR THIS LIST
-      Membership::model()->deleteAll('mglist_id=:mglist_id', array(':mglist_id'=>$id));
+      //Membership::model()->deleteAll('mglist_id=:mglist_id', array(':mglist_id'=>$id));
 	  $yg = new Yiigun();
 	  // fetch list address based on $id
-	  $my_members = $yg->fetchListMembers($mglist['address']);
-  foreach ($my_members->items as $member) {
-	    $output_str.='<p>Upserting member: '.$member->name.' &lt;'.$member->address.'&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-	    $m = new Member();
-	    // add to local db
-      $temp_str=$m->upsert($member); 
-  	  $output_str.=$temp_str;
-      // add to join table
-      $member=Member::model()->findByAttributes(array('address'=>$member->address));
-  	  Member::model()->addToList($member['id'],$id);
-  	  $output_str.='</p>';
-	  }
+	  // Loop parameters  - Assume that a list is larger than $listLimit
+	  $loadLimit = 100;
+	  $currentPosition=0;
+	  $fullImportCount=0;
+	  do{
+		  $my_members = $yg->fetchListMembers($mglist['address'], $currentPosition, $loadLimit );
+		  if ( $fullImportCount == 0 )
+		  {
+		  	$fullImportCount = $my_members->total_count;
+		  }	
+		  foreach ($my_members->items as $member) 
+		  {
+		  	$output_str.='<p>Upserting member: '.$member->name.' &lt;'.$member->address.'&gt;<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+		    $m = new Member();
+		    $runningCount++;
+		    // add to local db
+	      	$temp_str=$m->upsert($member); 
+	  	    $output_str.=$temp_str;
+	      	// add to join table
+		    $member=Member::model()->findByAttributes(array('address'=>$member->address));
+		  	Member::model()->addToList($member['id'],$id);
+		  }
+		  $currentPosition += count ( $my_members->items );
+		} while ( $currentPosition < $fullImportCount );
 	  return $output_str;
 	}
 	
