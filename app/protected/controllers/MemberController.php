@@ -215,6 +215,7 @@ class MemberController extends Controller
                 $m->modified_at = new CDbExpression('NOW()');          	                  
                  // echo $m->name.' '.$m->address.' ->'.$id.'<br />';
  			    $lookup_item=Member::model()->findByAttributes(array('address'=>$m->address));
+                  error_log("Successfully looked up: ". $m->address);
             	  if (!is_null($lookup_item)) {
             	       // member exists
                       echo 'exists'.$lookup_item['id'];
