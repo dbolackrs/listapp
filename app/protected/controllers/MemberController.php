@@ -215,17 +215,12 @@ class MemberController extends Controller
                 $m->modified_at = new CDbExpression('NOW()');          	                  
                 echo $m->name.' '.$m->address.' ->'.$id.'<br />';
  			    $lookup_item=Member::model()->findByAttributes(array('address'=>$m->address));
- 			    //error_log($lookup_item);
- 			    error_log("Successfully looked up: ". $m->address. "ID: " . $id . "LOOKUP: " . $lookup_item['id']);
             	  if (!is_null($lookup_item)) {
             	       // member exists
-                      error_log('exists');
                       if ($m->removeFromList($lookup_item['id'],$id) )
 		              {
-		              	error_log( "Removed " . $m->address . " from list.");
 		              	$yg->memberDelete($list_item['address'],$m->address);
 		              }
-		              error_log("Removed! " .$lookup_item['id']);
             	  }
               } 
             }
